@@ -8,7 +8,7 @@ class SCRM_PP {
     function init() {
         add_action( 'scrm_options_screen', array( __CLASS__, 'screen' ) );
         add_action( 'scrm_options_screen_updated', array( __CLASS__, 'screen_update' ) );
-        add_action( 'scrm_pp_form', array( __CLASS__, 'process' ) );
+        add_action( 'wp_head', array( __CLASS__, 'process' ) );
         add_shortcode( 'scrm_pp', array( __CLASS__, 'pp' ) );
         add_action( 'login_form', array( __CLASS__, 'redirect_to' ) );
         add_filter( 'scrm_force_redirect_url', array( __CLASS__, 'admin_redirect_to' ) );
@@ -61,7 +61,14 @@ class SCRM_PP {
      * Public Profile Page handler
      */
     function pp( $atts, $content = null ) {
+        $to_show = array(
+            'user_login'    => __( 'Username' ),
+            'first_name'    => __( 'First name' ),
+            'last_name'     => __( 'Last name' ),
+            'user_url'      => __( 'Website' )
+        );
         $to_hide = shortcode_atts( array( 'hide' => null ), $atts );
+        
         if( $to_hide['hide'] )
             $to_hide = explode( ',', $to_hide['hide'] );
         else
@@ -69,6 +76,7 @@ class SCRM_PP {
         
         $vars['path'] = SCRM_PP_ROOT . '/includes/templates/';
         $vars['to_hide'] = $to_hide;
+        $vars['to_show'] = $to_show;
         $vars['content'] = $content;
         template_render( 'profile_page', $vars );
     }
@@ -77,6 +85,8 @@ class SCRM_PP {
      * Public page form processor
      */
     function process() {
+        // Password changed?
+        $new_pass = false;
         // Cleanup old logs
         delete_transient( 'scrm_pp_updated_id' );
         
@@ -88,30 +98,33 @@ class SCRM_PP {
             // Load initial data
             $new_userdata = get_object_vars( $userdata );
             
-            if( isset( $_POST['pass1'] ) && isset( $_POST['pass2'] ) )
-                if( $_POST['pass1'] != '' && ( $_POST['pass1'] == $_POST['pass2'] ) )
-                    $new_userdata['user_pass'] = $_POST['pass1'];
-                else // Skip password update if user doesn't want that
-                    unset( $new_userdata['user_pass'] );
-            
             // Form field names to check
             $map_names = array(
-                'first_name' => 'first_name',
-                'last_name' => 'last_name',
-                'url' => 'user_url',
-                'description' => 'description'
+                'first_name',
+                'last_name',
+                'user_url',
+                'description'
             );
             // Map contact method keys too
             $contact_keys = _wp_get_user_contactmethods( $userdata );
             foreach( $contact_keys as $name => $desc )
-                $map_names[$name] = $name;
+                $map_names[] = $name;
             
             // Fill the mapped names
-            foreach( $map_names as $form_key => $userdata_key )
+            foreach( $map_names as $form_key )
                 if( isset( $_POST[$form_key] ) )
-                    $new_userdata[$userdata_key] = $_POST[$form_key];
+                    $new_userdata[$form_key] = $_POST[$form_key];
+            
+            if( isset( $_POST['pass1'] ) && isset( $_POST['pass2'] ) )
+                if( $_POST['pass1'] != '' && ( $_POST['pass1'] == $_POST['pass2'] ) )
+                    $new_pass = $new_userdata['user_pass'] = $_POST['pass1'];
+                else // Skip password update if user doesn't want that
+                    unset( $new_userdata['user_pass'] );
             
             set_transient( 'scrm_pp_updated_id', wp_update_user( $new_userdata ) );
+            // Redirect on password changes
+            if( $new_pass )
+                wp_redirect( wp_login_url() );
         }
      }
 }

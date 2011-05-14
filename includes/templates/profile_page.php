@@ -21,36 +21,19 @@
 </div>
 <form action="" method="post" id="scrm_pp_form">
     <?php wp_nonce_field( 'scrm_pp_form', 'scrm_pp_form_nonce' ); ?>
-    <div class="username-field">
-        <div><label for="user_login"><?php _e('Username'); ?></label></div>
-        <div>
-            <input type="text" id="user_login" value="<?php echo esc_attr($profile->user_login); ?>" disabled="disabled" />
-            <em><?php _e('Usernames cannot be changed.'); ?></em>
-        </div>
-    </div>
-    <div class="first_name-field">
-        <div><label for="first_name"><?php _e('First Name') ?></label></div>
-        <div>
-            <input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($profile->first_name) ?>" />
-        </div>
-    </div>
-    <div class="last_name-field">
-        <div><label for="last_name"><?php _e('Last Name') ?></label></div>
-        <div>
-            <input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($profile->last_name) ?>" />
-        </div>
-    </div>
     
-    <?php if ( !in_array( 'url', $to_hide ) ) : ?>
-    <div class="url-field">
-        <div><label for="url"><?php _e('Website') ?></label></div>
-        <div>
-            <input type="text" name="url" id="url" value="<?php echo esc_attr($profile->user_url) ?>" />
+    <?php foreach ( $to_show as $key => $label ) : ?>
+        <?php if ( !in_array( $key, $to_hide ) ) : ?>
+        <div class="<?php echo $key ?>-field">
+            <div><label for="<?php echo $key ?>"><?php echo $label ?></label></div>
+            <div>
+                <input type="text" name="<?php echo $key ?>" id="<?php echo $key ?>" value="<?php echo esc_attr($profile->$key) ?>" <?php $key == 'user_login' ? disabled( true ) : ''; ?> />
+            </div>
         </div>
-    </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    <?php endforeach; ?>
     
-    <?php foreach (_wp_get_user_contactmethods( $profile ) as $name => $desc) : ?>
+    <?php foreach ( _wp_get_user_contactmethods( $profile ) as $name => $desc ) : ?>
         <?php if ( !in_array( $name, $to_hide ) ) : ?>
         <div class="<?php echo $name ?>-field">
             <div>
