@@ -3,7 +3,7 @@ Contributors: sushkov
 Tags: crm, users, profile, fields, public profile, vivanista
 Requires at least: WordPress 3.0
 Tested up to: WordPress 3.1.2
-Stable tag: 0.1
+Stable tag: 0.2
 Donate link: http://stas.nerd.ro/pub/donate/
 
 Adds public profile page support to Simple CRM
@@ -24,6 +24,11 @@ Please follow the [standard installation procedure for WordPress plugins](http:/
 Before asking questions, please check the [video](http://stas.github.com/simple-crm).
 
 == Changelog ==
+
+= 0.2 =
+* Cleanup.
+* Smarter fields handling.
+* Pass update redirects correctly.
 
 = 0.1 =
 * First stable release.
